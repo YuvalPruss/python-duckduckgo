@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import urllib
-import urllib2
+import urllib.request
+import urllib.parse
 from xml.etree import ElementTree
 
 __version__ = 0.1
@@ -9,9 +9,7 @@ __version__ = 0.1
 def query(query, useragent='python-duckduckgo 0.1'):
     """
     Query Duck Duck Go, returning a Results object.
-
     Here's a query that's unlikely to change:
-
     >>> result = query('1 + 1')
     >>> result.type
     'nothing'
@@ -20,11 +18,11 @@ def query(query, useragent='python-duckduckgo 0.1'):
     >>> result.answer.type
     'calc'
     """
-    params = urllib.urlencode({'q': query, 'o': 'x'})
+    params = urllib.parse.urlencode({'q': query, 'o': 'x'})
     url = 'http://duckduckgo.com/?' + params
 
-    request = urllib2.Request(url, headers={'User-Agent': useragent})
-    response = urllib2.urlopen(request)
+    request = urllib.request.Request(url, headers={'User-Agent': useragent})
+    response = urllib.request.urlopen(request)
     xml = ElementTree.fromstring(response.read())
     response.close()
 
@@ -131,14 +129,14 @@ def main():
         try:
             related = results.related[options.d - 1]
         except IndexError:
-            print "Invalid disambiguation number."
+            print("Invalid disambiguation number.")
             sys.exit(1)
         results = query(related.url.split("/")[-1].replace("_", " "))
 
     if results.answer and results.answer.text:
-        print "Answer: %s\n" % results.answer.text
+        print("Answer: %s\n" % results.answer.text)
     elif results.abstract and results.abstract.text:
-        print "%s\n" % results.abstract.text
+        print("%s\n" % results.abstract.text)
 
     if results.type == 'disambiguation':
         print ("'%s' can mean multiple things. You can re-run your query "
@@ -150,14 +148,14 @@ def main():
             summary = related.text
             if len(summary) < len(related.text):
                 summary += "..."
-            print '%d. %s: %s\n' % (i + 1, name, summary)
+            print('%d. %s: %s\n' % (i + 1, name, summary))
     else:
         for i, result in enumerate(results.results[0:options.n]):
             summary = result.text[0:70].replace("&nbsp;", " ")
             if len(summary) < len(result.text):
                 summary += "..."
-            print "%d. %s" % (i + 1, summary)
-            print "  <%s>\n" % result.url
+            print("%d. %s" % (i + 1, summary))
+            print("  <%s>\n" % result.url)
 
 
 if __name__ == '__main__':
